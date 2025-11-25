@@ -1,3 +1,27 @@
+
+.cont-all {
+    display: grid;
+    place-items: center;
+    grid-template-columns: auto 1fr auto;
+    grid-template-rows: 1fr;
+    background-image: url(../main-background.jpg);
+    background-size: cover;
+    background-position: center;
+    min-height: 100vh; /* Đảm bảo chiếm toàn bộ chiều cao */
+
+}
+.all-body {
+    grid-column: 2 / 3; /* Đặt vào cột giữa */
+    grid-row: 1 / 2;
+    background-color: rgb(255, 255, 255); /* Màu nền trắng với độ mờ */
+    
+    /* border-radius: 8px; Bo góc nhẹ */
+    width: fit-content;      
+    /* max-width: 90%;          Đảm bảo không bị tràn màn hình nếu nội dung quá lớn */
+
+    /* "Lớn hơn một xíu" so với nội dung */
+    padding: 0;
+}
 /* --- Product List Styles --- */
 .product-card {
     transition: all 0.3s ease;
@@ -315,3 +339,12 @@
     font-size: 0.9rem;
     padding: 5px;
 }
+
+
+
+
+
+
+
+
+
