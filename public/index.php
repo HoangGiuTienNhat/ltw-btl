@@ -37,10 +37,10 @@ include '../app/Views/layouts/header.php';
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
 <div class="side-banner side-left">
-    <a href="#"><img src="https://via.placeholder.com/130x400?text=Sale+Left" class="img-fluid rounded shadow"></a>
+    <a href="#"><img src="banner-side.jpg" class="img-fluid rounded shadow"></a>
 </div>
 <div class="side-banner side-right">
-    <a href="#"><img src="https://via.placeholder.com/130x400?text=Sale+Right" class="img-fluid rounded shadow"></a>
+    <a href="#"><img src="banner-side.jpg" class="img-fluid rounded shadow"></a>
 </div>
 
 <div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
