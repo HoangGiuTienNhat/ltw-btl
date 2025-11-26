@@ -34,7 +34,47 @@ try {
     $stmtCat = $conn->query("SELECT * FROM categories LIMIT 6");
     $categories = $stmtCat->fetchAll();
 
+
+    // 4. [NEW] Lấy tin tức (Lấy 15 bài: 5 hiện + 10 ẩn)
+    // Giả sử bạn đã tạo bảng news và thêm dữ liệu như hướng dẫn trước
+    $stmtNews = $conn->query("SELECT * FROM news ORDER BY created_at DESC LIMIT 15");
+    $news_list = $stmtNews->fetchAll();
+
 } catch(Exception $e) { echo "Lỗi: " . $e->getMessage(); }
+
+
+
+
+
+// // [NEW QUERY] Lấy tin tức mới nhất
+// try {
+//     // Nếu database chưa có đủ tin, hãy vào phpMyAdmin thêm dữ liệu nhé
+//     $stmtNews = $conn->query("SELECT * FROM news ORDER BY created_at DESC LIMIT 15");
+//     $news_list = $stmtNews->fetchAll();
+// } catch(Exception $e) { $news_list = []; }
+
+// // Danh sách Thương hiệu (Tĩnh - Không cần DB)
+// $brands = [
+//     ['img' => 'pic/brand1.webp', 'link' => '#'],
+//     ['img' => 'pic/brand1.webp', 'link' => '#'],
+//     ['img' => 'pic/brand1.webp', 'link' => '#'],
+//     ['img' => 'pic/brand1.webp', 'link' => '#']
+// ];
+
+// [NEW QUERY] Lấy tin tức mới nhất
+try {
+    // Nếu database chưa có đủ tin, hãy vào phpMyAdmin thêm dữ liệu nhé
+    $stmtNews = $conn->query("SELECT * FROM news ORDER BY created_at DESC LIMIT 16");
+    $news_list = $stmtNews->fetchAll();
+} catch(Exception $e) { $news_list = []; }
+// Danh sách Thương hiệu (Tĩnh - Không cần DB)
+$brands = [
+    ['img' => 'https://www.apple.com/newsroom/images/2024/09/apple-debuts-iphone-16-pro-and-iphone-16-pro-max/tile/Apple-iPhone-16-Pro-hero-240909-lp.jpg.landing-big_2x.jpg', 'link' => 'https://www.apple.com/vn/'],
+    ['img' => 'https://dlcdnwebimgs.asus.com/files/media/b750b172-b8c8-462b-9f28-92519392fce6/v1/img/kv/kv.jpg', 'link' => 'https://www.asus.com/vn/'],
+    ['img' => 'https://www.sammobile.com/wp-content/uploads/2023/05/Samsung-x-Lazada-Super-Brand-Day-2023-Galaxy-Tab-S7-FE-Deal.png', 'link' => 'https://www.samsung.com/vn/'],
+    ['img' => 'https://www.matterhorncommunications.com/wp-content/uploads/2018/01/lmt9118-1515232240623.jpg', 'link' => 'https://www.mi.com/vn/']
+];
+
 
 include '../app/Views/layouts/header.php';
 ?>
@@ -160,6 +200,54 @@ include '../app/Views/layouts/header.php';
             </div>
         </div>
 
+
+
+        
+<!-- bạn nên thêm code vào đây -->
+         <!-- Phần Chuyên trang thương hiệu -->
+        <div class="container mb-5">
+            <h4 class="fw-bold mb-4 border-start border-4 border-primary ps-3">CHUYÊN TRANG THƯƠNG HIỆU</h4>
+            <div class="row g-3">
+                <?php foreach($brands as $brand): ?>
+                <div class="col-6 col-md-3">
+                    <a href="<?= $brand['link'] ?>" target="_blank">
+                        <img src="<?= $brand['img'] ?>" class="img-fluid rounded shadow" alt="Banner thương hiệu">
+                    </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <!-- Phần Tin tức -->
+        <div class="container mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="fw-bold border-start border-4 border-info ps-3">TIN TỨC</h4>
+                <a href="news.php" class="btn btn-outline-dark btn-sm rounded-pill">Xem tất cả <i class="bi bi-arrow-right"></i></a>
+            </div>
+            <div class="row row-cols-2 row-cols-md-5 g-3">
+                <?php foreach($news_list as $index => $news): ?>
+                <div class="col<?= ($index >= 5) ? ' news-hidden' : '' ?>">
+                    <a href="<?= $news['link'] ?>" class="text-decoration-none">
+                        <div class="card h-100 border-0 shadow-sm">
+                            <img src="<?= $news['image'] ?>" class="card-img-top rounded" alt="<?= $news['title'] ?>">
+                            <div class="card-body p-2">
+                                <h6 class="card-title small text-dark"><?= $news['title'] ?></h6>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                <?php endforeach; ?>
+            </div>
+            <?php if (count($news_list) > 5): ?>
+            <div class="text-center mt-4">
+                <button id="btnLoadMoreNews" class="btn btn-outline-primary rounded-pill">Xem thêm</button>
+            </div>
+            <?php endif; ?>
+        </div>
+                                                
+
+
+
     </div>
 </div>
 
@@ -206,4 +294,20 @@ include '../app/Views/layouts/header.php';
         });
         document.getElementById('block-' + type).classList.remove('d-none');
     }
+
+    // Load More News Logic
+    document.getElementById('btnLoadMoreNews')?.addEventListener('click', function() {
+        const hiddenNews = document.querySelectorAll('.news-hidden');
+        let count = 0;
+        hiddenNews.forEach(news => {
+            if (count < 10) { // Hiện thêm 10 tin (2 hàng x 5 cột)
+                news.classList.remove('news-hidden');
+                count++;
+            }
+        });
+        if (document.querySelectorAll('.news-hidden').length === 0) {
+            this.style.display = 'none';
+        }
+    });
+
 </script>

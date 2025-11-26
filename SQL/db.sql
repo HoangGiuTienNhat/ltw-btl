@@ -5,6 +5,8 @@ DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
 
+DROP TABLE IF EXISTS news;
+
 -- 2. BẢNG USERS
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -79,8 +81,8 @@ INSERT INTO categories (id, name) VALUES
 -- --- SẢN PHẨM: ĐIỆN THOẠI (Cat ID: 2) - 16 Sản phẩm ---
 INSERT INTO products (category_id, name, price, old_price, image, image1, image2, image3, chip, ram, screen, battery, outstanding, rating, is_featured) VALUES
 (2, 'iPhone 15 Pro Max 256GB', 29990000, 34990000, 
- 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_3.jpg',
- 'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_2.jpg',
+ 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_3.png',
+ 'https://cdn2.cellphones.com.vn/insecure/rs:fill:0:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_4__1.jpg',
  'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_1.jpg',
  'https://cdn2.cellphones.com.vn/insecure/rs:fill:358:358/q:90/plain/https://cellphones.com.vn/media/catalog/product/i/p/iphone-15-pro-max_4.jpg',
  'Apple A17 Pro', '8GB', '6.7 inch OLED 120Hz', '4422 mAh', 'Khung viền Titan bền bỉ, nút Action Button mới, cổng Type-C tốc độ cao.', 5.0, 1),
@@ -213,12 +215,45 @@ INSERT INTO products (category_id, name, price, old_price, image, image1, image2
 
 
 
+-- tin tuc
+-- 1. TẠO BẢNG TIN TỨC
+CREATE TABLE news (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    image VARCHAR(255) NOT NULL,
+    link VARCHAR(255) DEFAULT '#',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. THÊM DỮ LIỆU TIN TỨC MẪU (Ảnh thật từ trang tin công nghệ)
+-- Chèn dữ liệu mới với đường dẫn ảnh local
+-- INSERT INTO news (title, image) VALUES 
+-- ('Xiaomi POCO Pad ra mắt: Chip Snapdragon 7s Gen 2, màn hình 120Hz', 'pic/news1.jpg'),
+-- ('Trải nghiệm Apple Intelligence: Tóm tắt web thông minh trên Safari', 'pic/news2.jpg'),
+-- ('Top ứng dụng quay màn hình iPhone chất lượng nhất 2025', 'pic/news3.jpg'),
+-- ('POCO F6 Pro ra mắt: Snapdragon 8 Gen 2, sạc nhanh 120W siêu tốc', 'pic/news4.jpg');
 
 
 
 
 
-
+INSERT INTO news (title, image, link) VALUES 
+('HONOR Magic Ultra 8: Viên đạn vượt trội với chip Snapdragon', 'pic/news1.jpg', 'https://example.com/news/honor-magic-ultra-8'),
+('Xiaomi 17 Ultra: Photography Kit với render sống động', 'pic/news2.jpg', 'https://example.com/news/xiaomi-17-ultra'),
+('Đánh giá Lenovo ThinkPad T14 Gen 6: Intel Core Ultra 7 258V', 'pic/news3.jpg', 'https://example.com/news/lenovo-thinkpad-t14'),
+('Asus Vivobook 16 Flip: Laptop 2 trong 1 OLED giá hợp lý', 'pic/news4.jpg', 'https://example.com/news/asus-vivobook-16-flip'),
+('So sánh Dimensity 9500 vs Snapdragon 8 Elite: Trận chiến chip flagship', 'pic/news5.jpg', 'https://example.com/news/dimensity-vs-snapdragon'),
+('Apple iPhone 17: Tin đồn về camera mới và thiết kế mỏng hơn', 'pic/news6.jpg', 'https://example.com/news/iphone-17-rumors'),
+('Samsung Galaxy S26: Dự đoán về pin lớn và AI nâng cao', 'pic/news7.jpg', 'https://example.com/news/galaxy-s26'),
+('Xiaomi Redmi Note 14: Giá rẻ nhưng hiệu năng mạnh mẽ', 'pic/news8.jpg', 'https://example.com/news/redmi-note-14'),
+('Asus ROG Phone 9: Gaming phone với tản nhiệt tiên tiến', 'pic/news9.jpg', 'https://example.com/news/rog-phone-9'),
+('Lenovo Yoga Slim 7x: Laptop mỏng nhẹ với Snapdragon X Elite', 'pic/news10.jpg', 'https://example.com/news/yoga-slim-7x'),
+('Honor MagicBook Art 14: Thiết kế nghệ thuật, hiệu suất cao', 'pic/news11.jpg', 'https://example.com/news/magicbook-art-14'),
+('POCO X7 Pro: Chip Dimensity 9200, sạc 90W', 'pic/news12.jpg', 'https://example.com/news/poco-x7-pro'),
+('Apple Watch Series 11: Theo dõi sức khỏe nâng cao', 'pic/news13.jpg', 'https://example.com/news/apple-watch-11'),
+('Samsung Galaxy Tab S10: Màn hình OLED 120Hz', 'pic/news14.jpg', 'https://example.com/news/galaxy-tab-s10'),
+('Xiaomi Mix Flip: Điện thoại gập gọn gàng', 'pic/news15.jpg', 'https://example.com/news/xiaomi-mix-flip'),
+('Asus Zenfone 12: Camera gimbal ổn định', 'pic/news16.jpg', 'https://example.com/news/zenfone-12');
 
 
 

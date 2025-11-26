@@ -340,11 +340,24 @@
     padding: 5px;
 }
 
-
-
-
-
-
-
-
-
+/* --- Thêm style cho phần Tin tức --- */
+.news-hidden {
+    display: none;
+}
+.card-img-top {
+    height: 150px; /* Cố định chiều cao ảnh tin tức để grid đều */
+    object-fit: cover;
+}
+.card-title.small {
+    font-size: 0.85rem;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Giới hạn 3 dòng */
+    -webkit-box-orient: vertical;
+}
+.card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
