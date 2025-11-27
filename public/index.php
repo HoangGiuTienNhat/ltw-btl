@@ -100,12 +100,21 @@ include '../app/Views/layouts/header.php';
         <div class="container pb-5 position-relative">
             
             <div id="homeCarousel" class="carousel slide mb-5" data-bs-ride="carousel">
-                <div class="carousel-inner">
+                <div class="carousel-inner" style="border-radius: 11px; margin-top:5px ; padding-top :2px;">
                     <div class="carousel-item active">
-                        <img src="banner-main.jpg" class="d-block w-100 object-fit-cover" style="max-height: 450px;">
+                        <img src="pic/banner-main1.webp" class="d-block w-100 object-fit-cover" style="max-height: 450px;">
                     </div>
                     <div class="carousel-item">
-                        <img src="banner-main.jpg" class="d-block w-100 object-fit-cover" style="max-height: 450px;">
+                        <img src="pic/banner-main2.webp" class="d-block w-100 object-fit-cover" style="max-height: 450px;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/banner-main3.webp" class="d-block w-100 " style="max-height: 450px;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/banner-main4.webp" class="d-block w-100 object-fit-cover" style="max-height: 450px;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/banner-main5.png" class="d-block w-100 " style="max-height: 450px;">
                     </div>
                 </div>
                 <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
