@@ -10,7 +10,10 @@
 
 -- 1. LÀM SẠCH DATABASE
 DROP TABLE IF EXISTS reviews;
-DROP TABLE IF EXISTS product_images; -- Bỏ bảng này vì giờ gộp vào products
+
+DROP TABLE IF EXISTS order_items;
+DROP TABLE IF EXISTS orders;
+
 DROP TABLE IF EXISTS products;
 DROP TABLE IF EXISTS categories;
 DROP TABLE IF EXISTS users;
@@ -104,7 +107,7 @@ CREATE TABLE `orders` (
   `user_id` int(11) NOT NULL,
   `order_number` varchar(50) NOT NULL,
   `total_amount` decimal(15,2) NOT NULL,
-  `status` enum('pending','completed','cancelled') DEFAULT 'completed',
+  `status` enum('pending','shipping','completed','cancelled') DEFAULT 'completed',
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -117,7 +120,7 @@ INSERT INTO `orders` (`id`, `user_id`, `order_number`, `total_amount`, `status`,
 (2, 3, 'ORD1764370663539', 28990000.00, 'completed', '2025-11-28 22:57:43'),
 (3, 3, 'ORD1764370999907', 26990000.00, 'completed', '2025-11-28 23:03:19'),
 (4, 3, 'ORD1764511520923', 28990000.00, 'completed', '2025-11-30 14:05:20'),
-(5, 3, 'ORD1764511684752', 53980000.00, 'completed', '2025-11-30 14:08:04');
+(5, 3, 'ORD1764511684752', 53980000.00, 'shipping', '2025-11-30 14:08:04');
 
 -- --------------------------------------------------------
 
