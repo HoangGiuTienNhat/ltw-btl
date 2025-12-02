@@ -121,15 +121,18 @@ include '../app/Views/layouts/header.php';
                 <div class="mb-5">
                     <div class="row g-3">
                         <div class="col-lg-3 d-none d-lg-block">
-                            <div class="d-flex flex-column gap-3 h-100">
-                                <a href="products.php" class="flex-grow-1 overflow-hidden rounded shadow-sm">
-                                    <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover hover-zoom">
-                                </a>
-                                <a href="products.php" class="flex-grow-1 overflow-hidden rounded shadow-sm">
-                                    <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover hover-zoom">
-                                </a>
-                            </div>
-                        </div>
+    <div class="d-flex flex-column gap-3 h-100">
+        
+        <a href="products.php" class="flex-fill overflow-hidden rounded shadow-sm position-relative">
+            <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
+        </a>
+
+        <a href="products.php" class="flex-fill overflow-hidden rounded shadow-sm position-relative">
+            <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
+        </a>
+        
+    </div>
+</div>
 
                         <div class="col-12 col-lg-9">
                             <div class="bg-white rounded shadow-sm border p-3">
