@@ -1,375 +1,156 @@
+/* public/css/style.css */
 
-.cont-all {
-    display: grid;
-    place-items: center;
-    /* grid-template-columns: auto 1fr auto; */
-    grid-template-columns: 1fr minmax(auto, 1320px) 1fr;
-    grid-template-rows: 1fr;
-    background-image: url(../main-background.jpg);
+/* --- Global Layout --- */
+body {
+    background-image: url('../main-background.jpg'); /* Đảm bảo đường dẫn ảnh đúng */
     background-size: cover;
     background-position: center;
-    min-height: 100vh; /* Đảm bảo chiếm toàn bộ chiều cao */
-    align-items: start; /* QUAN TRỌNG: Để sticky hoạt động */
+    background-attachment: fixed; /* Giữ background đứng yên khi cuộn */
+    background-color: #f5f5f5; /* Màu dự phòng */
 }
-.all-body {
-    grid-column: 2 / 3; /* Đặt vào cột giữa */
-    grid-row: 1 / 2;
-    background-color: rgb(255, 255, 255); /* Màu nền trắng với độ mờ */
-    
-    /* border-radius: 8px; Bo góc nhẹ */
-    width: fit-content;      
-    /* max-width: 90%;          Đảm bảo không bị tràn màn hình nếu nội dung quá lớn */
 
-    /* "Lớn hơn một xíu" so với nội dung */
-    padding: 0;
+/* Wrapper chính cho nội dung giữa */
+.main-wrapper {
+    background-color: #fff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    min-height: 100vh;
 }
-/* --- Product List Styles --- */
+
+/* --- Product Cards --- */
 .product-card {
     transition: all 0.3s ease;
     border: 1px solid #eee;
-}
-
-.product-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-}
-
-/* Cố định khung ảnh và hiệu ứng Zoom */
-.product-img-box {
-    width: 100%;
-    height: 250px; /* Chiều cao cố định */
-    overflow: hidden; /* Ẩn phần ảnh bị zoom ra ngoài */
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: #fff;
+    height: 100%; /* Đảm bảo chiều cao đồng đều */
+    display: flex;
+    flex-direction: column;
 }
 
-.product-img-box img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain; /* Hoặc 'cover' tùy nhu cầu */
-    transition: transform 0.5s ease;
-}
-
-/* Hover vào card thì ảnh zoom 10% */
-.product-card:hover .product-img-box img {
-    transform: scale(1.1);
-}
-
-/* --- Detail Page Styles --- */
-.detail-gallery-thumb {
-    cursor: pointer;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    opacity: 0.7;
-    transition: 0.3s;
-}
-.detail-gallery-thumb:hover, .detail-gallery-thumb.active {
-    opacity: 1;
-    border-color: #000;
-}
-.btn-buy-now {
-    border: 1px solid #ddd;
-    color: #333;
-}
-.btn-buy-now:hover {
-    background-color: #f8f9fa;
-}
-
-
-
-
-
-
-
-
-
-/* public/css/style.css */
-.product-card {
-    transition: all 0.3s ease;
-    border: 1px solid #eee;
-}
 .product-card:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    transform: translateY(-2px);
 }
+
 .product-img-box {
     width: 100%;
-    height: 250px;
+    position: relative;
+    padding-top: 100%; /* Tạo khung vuông tỉ lệ 1:1 responsive */
     overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     background: #fff;
 }
+
 .product-img-box img {
-    width: 100%;
-    height: 100%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 90%;
+    max-height: 90%;
     object-fit: contain;
     transition: transform 0.5s ease;
 }
+
 .product-card:hover .product-img-box img {
-    transform: scale(1.1); /* Zoom 10% */
-}
-.detail-gallery-thumb {
-    cursor: pointer;
-    border: 1px solid #ddd;
-    opacity: 0.7;
-    transition: 0.3s;
-    object-fit: cover;
-}
-.detail-gallery-thumb:hover, .detail-gallery-thumb.active {
-    opacity: 1;
-    border-color: #000;
+    transform: translate(-50%, -50%) scale(1.1);
 }
 
-
-
-
-/* --- Swiper Slider Custom --- */
+/* --- Swiper Slider Navigation --- */
 .swiper-button-next, .swiper-button-prev {
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.9);
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    color: #333; 
-}
-.swiper-button-next:after, .swiper-button-prev:after {
-    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    color: #333;
     font-weight: bold;
 }
-.product-slider {
-    padding-bottom: 40px; /* Chừa chỗ cho thanh pagination nếu cần */
+.swiper-button-next:after, .swiper-button-prev:after {
+    font-size: 16px;
 }
 
+/* Ẩn nút điều hướng trên mobile để đỡ rối */
+@media (max-width: 768px) {
+    .swiper-button-next, .swiper-button-prev {
+        display: none;
+    }
+}
 
+.product-slider, .phone-slider, .tablet-slider {
+    padding-bottom: 30px;
+}
 
-
-
-/* --- 1. Side Banners (Quảng cáo 2 bên) --- */
-.side-banner {
+/* --- Side Banners (Quảng cáo 2 bên) --- */
+.side-banner-img {
     position: sticky;
-    top: 180px; /* Canh chỉnh độ cao để không đè lên Header */
-    
-    width: 95%; /* Kích thước banner */
-    max-width: 255px; /* Giới hạn kích thước tối đa */
-    
-    z-index: 10;
-    transition: all 0.3s ease;
-}
-
-
-.side-left {
-    grid-column: 1 / 2;
-    justify-self: end; /* Đẩy sang phải của cột 1 */
-    margin-right: 3px; /* Khoảng cách an toàn */
-}
-
-/* Banner Phải: Nằm ở cột 3, canh lề trái (sát vào nội dung chính) */
-.side-right {
-    grid-column: 3 / 4;
-    justify-self: start; /* Đẩy sang trái của cột 3 */
-    margin-left: 3px; /* Khoảng cách an toàn */
-}
-
-/* Ảnh trong banner */
-.side-banner img {
+    top: 100px;
     width: 100%;
-    height: auto;
-    display: block;
-    transition: transform 0.3s ease;
-}
-
-
-/* Ẩn banner nếu màn hình nhỏ hơn 1600px (vì sẽ không đủ chỗ hiển thị, tránh đè nội dung) */
-@media (max-width: 1600px) {
-    .side-banner { display: none; }
-}
-
-/* --- 2. Swiper Navigation (Mũi tên điều hướng) --- */
-.swiper-button-next, .swiper-button-prev {
-    background-color: #fff; /* Nền trắng */
-    width: 45px;
-    height: 45px;
-    border-radius: 50%; /* Hình tròn */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15); /* Đổ bóng nổi */
-    color: #333;
-    font-weight: bold;
-    border: 1px solid #eee;
-}
-
-.swiper-button-next:after, .swiper-button-prev:after {
-    font-size: 20px;
-}
-
-.swiper-button-next:hover, .swiper-button-prev:hover {
-    background-color: #333;
-    color: #fff;
-    border-color: #333;
-}
-
-/* Đẩy mũi tên ra ngoài khung sản phẩm một chút */
-.swiper-button-prev { left: -25px; }
-.swiper-button-next { right: -25px; }
-
-/* Tạo khoảng trống dưới cùng để không bị cắt bóng đổ của sản phẩm hàng dưới */
-.product-slider {
-    padding: 10px 10px 20px 10px; 
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* --- Style cho Block Danh mục (New Section) --- */
-.category-block-header {
-    border-bottom: 2px solid #eee;
-    margin-bottom: 15px;
-}
-
-.cat-tab-btn {
-    font-weight: bold;
-    text-transform: uppercase;
-    color: #555;
-    padding: 10px 20px;
-    border-bottom: 3px solid transparent;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.cat-tab-btn:hover, .cat-tab-btn.active {
-    color: #d70018; /* Màu đỏ đặc trưng */
-    border-bottom-color: #d70018;
-    background-color: rgba(215, 0, 24, 0.05);
-}
-
-.brand-pill {
-    border: 1px solid #ddd;
-    border-radius: 20px;
-    padding: 5px 15px;
-    font-size: 0.85rem;
-    color: #333;
-    background: #fff;
-    text-decoration: none;
-    transition: all 0.2s;
-    white-space: nowrap;
-}
-
-.brand-pill:hover {
-    border-color: #d70018;
-    color: #d70018;
-    background: #fff5f5;
-}
-
-/* Tùy chỉnh mũi tên cho slider này nhỏ hơn chút để hợp layout */
-.category-slider .swiper-button-next, 
-.category-slider .swiper-button-prev {
-    width: 35px;
-    height: 35px;
-}
-.category-slider .swiper-button-next:after, 
-.category-slider .swiper-button-prev:after {
-    font-size: 14px;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-/* --- Sidebar Filter Styles --- */
-.filter-sidebar .list-group-item {
-    border: none;
-    padding: 10px 15px;
-    margin-bottom: 5px;
     border-radius: 8px;
-    color: #555;
-    transition: all 0.2s;
+    transition: transform 0.3s;
+}
+.side-banner-img:hover {
+    transform: translateY(-5px);
 }
 
-.filter-sidebar .list-group-item:hover {
-    background-color: #f8f9fa;
-    color: #000;
-}
-
-.filter-sidebar .list-group-item.active {
-    background-color: #e7f1ff; /* Màu xanh nhạt */
-    color: #0d6efd; /* Màu chữ xanh đậm */
+/* --- Category Tabs & Elements --- */
+.cat-tab-btn {
+    cursor: pointer;
     font-weight: 600;
+    padding: 8px 16px;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+    white-space: nowrap; /* Tránh xuống dòng trên mobile */
 }
 
-.filter-header {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-
-
-
-
-
-
-/* --- Pagination Styles --- */
-.pagination .page-link {
-    color: #333;
-    border: 1px solid #dee2e6;
-    margin: 0 2px;
-    border-radius: 4px;
-}
-.pagination .page-item.active .page-link {
-    background-color: #0d6efd;
-    border-color: #0d6efd;
-    color: #fff;
-}
-.pagination .page-link:hover {
-    background-color: #e9ecef;
+.cat-tab-btn.active {
     color: #0d6efd;
+    border-bottom-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.05);
 }
 
-/* --- Price Filter Inputs --- */
-.price-input {
-    font-size: 0.9rem;
-    padding: 5px;
-}
-.card-brand-item {
-    height: 180px;
-    object-fit: cover;
-}
-/* --- Thêm style cho phần Tin tức --- */
+/* --- News Section --- */
 .news-hidden {
     display: none;
 }
-.card-img-top {
-    height: 150px; /* Cố định chiều cao ảnh tin tức để grid đều */
-    object-fit: cover;
+.card-brand-item {
+    transition: transform 0.3s;
 }
-.card-title.small {
-    font-size: 0.85rem;
-    line-height: 1.3;
+.card-brand-item:hover {
+    transform: scale(1.05);
+}
+
+/* --- Fix cho phần Tin tức --- */
+
+/* Class cắt chữ: Giới hạn hiển thị đúng 3 dòng, thừa sẽ hiện dấu ... */
+.text-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Số dòng muốn hiển thị */
+    -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    /* -webkit-line-clamp: 3;  */
-    -webkit-box-orient: vertical;
+    line-height: 1.4em; /* Khoảng cách dòng */
+    height: 4.2em; /* Chiều cao cố định = số dòng x line-height (3 x 1.4 = 4.2) */
 }
-.card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+/* Hiệu ứng hover nhẹ cho thẻ tin tức */
+.hover-shadow:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
     transition: all 0.3s ease;
+}
+
+/* Đảm bảo ảnh trong khung ratio luôn phủ kín */
+.object-fit-cover {
+    object-fit: cover;
+}
+
+/* Mobile responsive optimizations */
+@media (max-width: 576px) {
+    .cat-tab-btn {
+        font-size: 0.9rem;
+        padding: 5px 10px;
+    }
+    /* Chỉnh lại font size tiêu đề trên mobile */
+    h4 {
+        font-size: 1.2rem;
+    }
 }

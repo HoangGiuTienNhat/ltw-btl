@@ -194,36 +194,28 @@ include '../app/Views/layouts/header.php';
                         <h4 class="fw-bold border-start border-4 border-info ps-3 m-0">TIN TỨC</h4>
                         <a href="news.php" class="btn btn-outline-dark btn-sm rounded-pill">Xem tất cả <i class="bi bi-arrow-right"></i></a>
                     </div>
-
                     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-5 g-3">
                         <?php foreach($news_list as $index => $news): ?>
                         <div class="col<?= ($index >= 5) ? ' news-hidden' : '' ?>">
-                            <a href="<?= $news['link'] ?>" class="text-decoration-none h-100 d-block">
-                                <div class="card h-100 border-0 shadow-sm hover-shadow transition-card">
-                                    <div class="ratio ratio-16x9 overflow-hidden rounded-top">
-                                        <img src="<?= $news['image'] ?>" class="object-fit-cover w-100 h-100" alt="<?= htmlspecialchars($news['title']) ?>">
+                            <a href="<?= $news['link'] ?>" class="text-decoration-none">
+                                <div class="card h-100 border-0 shadow-sm hover-shadow">
+                                    <div class="ratio ratio-4x3">
+                                        <img src="<?= $news['image'] ?>" class="card-img-top object-fit-cover rounded-top" alt="<?= $news['title'] ?>">
                                     </div>
-                                    
-                                    <div class="card-body p-2 bg-white rounded-bottom d-flex flex-column">
-                                        <h6 class="card-title small text-dark mb-0 text-clamp-3 fw-semibold">
-                                            <?= htmlspecialchars($news['title']) ?>
-                                        </h6>
+                                    <div class="card-body p-2 bg-light rounded-bottom">
+                                        <h6 class="card-title small text-dark mb-0 text-truncate-2-lines"><?= $news['title'] ?></h6>
                                     </div>
                                 </div>
                             </a>
                         </div>
                         <?php endforeach; ?>
                     </div>
-                    
                     <?php if (count($news_list) > 5): ?>
                     <div class="text-center mt-4">
                         <button id="btnLoadMoreNews" class="btn btn-outline-primary rounded-pill px-4">Xem thêm</button>
                     </div>
                     <?php endif; ?>
                 </div>
-
-
-                
 
             </div> </div>
 
