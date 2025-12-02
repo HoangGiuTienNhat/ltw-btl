@@ -29,6 +29,15 @@ try {
 include '../app/Views/layouts/header.php';
 ?>
 
+<?php
+// If user is logged in, use their full name for reviews
+$currentUserName = '';
+if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
+    $currentUserName = $_SESSION['user']['full_name'];
+}
+
+?>
+
 <div class="container py-4">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
@@ -107,14 +116,23 @@ include '../app/Views/layouts/header.php';
                         <textarea name="comment" class="form-control" rows="3" required placeholder="Sản phẩm này thế nào?"></textarea>
                     </div>
                     <div class="row">
+                        <?php if(!empty($currentUserName)): ?>
+                        <div class="col-md-6 mb-2">
+                            <input type="hidden" name="user_name" value="<?= htmlspecialchars($currentUserName) ?>">
+                            <input type="text" class="form-control" value="<?= htmlspecialchars($currentUserName) ?>" disabled>
+                        </div>
+                        <?php else: ?>
                         <div class="col-md-6 mb-2">
                             <input type="text" name="user_name" class="form-control" placeholder="Tên của bạn" required>
                         </div>
+                        <?php endif; ?>
                         <div class="col-md-6 mb-2">
                             <select name="rating" class="form-select">
-                                <option value="5">⭐⭐⭐⭐⭐ (Tuyệt vời)</option>
-                                <option value="4">⭐⭐⭐⭐ (Tốt)</option>
-                                <option value="3">⭐⭐⭐ (Bình thường)</option>
+                                <option value="5">⭐⭐⭐⭐⭐</option>
+                                <option value="4">⭐⭐⭐⭐</option>
+                                <option value="3">⭐⭐⭐</option>
+                                <option value="2">⭐⭐</option>
+                                <option value="1">⭐</option>
                             </select>
                         </div>
                     </div>
