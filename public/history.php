@@ -29,7 +29,7 @@ include '../app/Views/layouts/header.php';
 <?php unset($_SESSION['order_success']); ?>
 <?php endif; ?>
 
-<div class="container py-5">
+<div class="container py-5" style="background-color: #f5f5f5;">
     <h2 class="fw-bold mb-4">Lịch sử đơn hàng</h2>
 
     <?php if (empty($orders)): ?>
