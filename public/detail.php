@@ -35,7 +35,6 @@ $currentUserName = '';
 if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
     $currentUserName = $_SESSION['user']['full_name'];
 }
-
 ?>
 
 <div class="container py-4" style="background-color: #f5f5f5;">
@@ -48,16 +47,27 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
 
     <div class="row g-5">
         <div class="col-md-5">
-            <div class="border rounded p-3 mb-3 text-center bg-white">
-                <img id="mainImage" src="<?= $product['image'] ?>" class="img-fluid" style="max-height: 400px; object-fit: contain;">
+            <div style="width: 100%; aspect-ratio: 4/3; background-color: #fff; border: 1px solid #dee2e6; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-bottom: 1rem; position: relative;">
+                <img id="mainImage" src="<?= $product['image'] ?>" alt="<?= htmlspecialchars($product['name']) ?>" 
+                    style="width: 100%; height: 100%; object-fit: contain; transition: opacity 0.3s ease;">
             </div>
-            <div class="d-flex gap-2 overflow-auto">
+
+            <div class="d-flex gap-2 overflow-auto py-1">
+                <img src="<?= $product['image'] ?>" 
+                    class="detail-gallery-thumb border rounded p-1"
+                    style="width: 70px; height: 70px; object-fit: cover; cursor: pointer; transition: all 0.2s; border: 2px solid #dc3545; opacity: 1;" 
+                    onclick="changeProductImage(this, '<?= $product['image'] ?>')">
+                
                 <?php foreach($gallery as $imgUrl): ?>
-                <img src="<?= $imgUrl ?>" class="detail-gallery-thumb border rounded p-1" style="width: 70px; height: 70px; object-fit: cover; cursor: pointer;" onclick="document.getElementById('mainImage').src=this.src">
+                    <?php if($imgUrl !== $product['image']): ?>
+                    <img src="<?= $imgUrl ?>" 
+                        class="detail-gallery-thumb border rounded p-1" 
+                        style="width: 70px; height: 70px; object-fit: cover; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; opacity: 0.6;" 
+                        onclick="changeProductImage(this, '<?= $imgUrl ?>')">
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </div>
         </div>
-
         <div class="col-md-7">
             <h3 class="fw-bold mb-3"><?= $product['name'] ?></h3>
             
@@ -110,7 +120,9 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
             <div class="bg-light p-4 rounded">
                 <h5 class="fw-bold mb-4">Đánh giá & Bình luận (<?= count($reviews) ?>)</h5>
                 
-                <form action="submit_review.php" method="POST" class="mb-4">
+                
+
+                <form id="reviewForm" class="mb-4">
                     <input type="hidden" name="product_id" value="<?= $id ?>">
                     <div class="mb-3">
                         <textarea name="comment" class="form-control" rows="3" required placeholder="Sản phẩm này thế nào?"></textarea>
@@ -136,7 +148,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
                             </select>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary mt-2">Gửi đánh giá</button>
+                    <button type="submit" id="btnSubmitReview" class="btn btn-primary mt-2">Gửi đánh giá</button>
                 </form>
 
                 <div class="review-list">
@@ -155,6 +167,8 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
                     </div>
                     <?php endforeach; ?>
                 </div>
+
+
             </div>
         </div>
     </div>
@@ -174,32 +188,48 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
 <?php include '../app/Views/layouts/footer.php'; ?>
 
 <script>
-    // Hàm tăng giảm số lượng
+    // XỬ LÝ CHUYỂN ẢNH VỚI HIỆU ỨNG ---
+    function changeProductImage(element, src) {
+        const mainImg = document.getElementById('mainImage');
+        
+        // Làm mờ ảnh cũ
+        mainImg.style.opacity = 0;
+
+        // Đổi src sau 150ms và hiện lại
+        setTimeout(() => {
+            mainImg.src = src;
+            mainImg.style.opacity = 1;
+        }, 150);
+
+        // Xử lý active class cho thumbnail
+        document.querySelectorAll('.detail-gallery-thumb').forEach(thumb => {
+            thumb.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    
     function updateQty(change) {
         let input = document.getElementById('qtyInput');
         let newVal = parseInt(input.value) + change;
         if (newVal >= 1) input.value = newVal;
     }
 
-    // Xử lý sự kiện click nút Mua Ngay
     document.querySelector('.btn-add-to-cart-detail').addEventListener('click', function() {
         const btn = this;
         const qty = document.getElementById('qtyInput').value;
         const originalText = btn.innerHTML;
 
-        // Hiệu ứng Loading
         btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang xử lý...';
         btn.disabled = true;
 
-        // Chuẩn bị dữ liệu gửi đi
         const formData = new FormData();
         formData.append('product_id', btn.getAttribute('data-id'));
         formData.append('product_name', btn.getAttribute('data-name'));
         formData.append('product_price', btn.getAttribute('data-price'));
         formData.append('product_image', btn.getAttribute('data-image'));
-        formData.append('quantity', qty); // Lấy số lượng từ input
+        formData.append('quantity', qty);
 
-        // Gửi AJAX
         fetch('cart_add.php', {
             method: 'POST',
             body: formData
@@ -207,14 +237,16 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
         .then(response => response.json())
         .then(data => {
             if (data.status === 'success') {
-                // Cập nhật Badge trên Header
                 const badge = document.getElementById('cart-badge');
                 if (badge) badge.innerText = data.total_items;
 
-                // Hiện Toast thông báo
                 const toastEl = document.getElementById('liveToast');
-                const toast = new bootstrap.Toast(toastEl);
-                toast.show();
+                if(toastEl) {
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                } else {
+                    alert("Đã thêm vào giỏ hàng!");
+                }
             } else {
                 alert('Lỗi: ' + data.message);
             }
@@ -228,4 +260,91 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
             btn.disabled = false;
         });
     });
+
+    // ... (Code xử lý ảnh và giỏ hàng cũ giữ nguyên ở trên) ...
+
+    // --- XỬ LÝ GỬI ĐÁNH GIÁ (AJAX REVIEW) ---
+    document.getElementById('reviewForm').addEventListener('submit', function(e) {
+        e.preventDefault(); // Ngăn load lại trang
+
+        const form = this;
+        const btn = document.getElementById('btnSubmitReview');
+        const originalText = btn.innerHTML;
+
+        // 1. Hiệu ứng đang xử lý
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Đang gửi...';
+        btn.disabled = true;
+
+        // 2. Lấy dữ liệu form
+        const formData = new FormData(form);
+
+        // 3. Gửi AJAX
+        fetch('submit_review.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json()) // Backend bắt buộc phải trả về JSON
+        .then(data => {
+            if (data.status === 'success') {
+                // A. Reset form
+                form.reset(); 
+                
+                // B. Tạo HTML cho review mới
+                const starsHtml = '<i class="bi bi-star-fill"></i>'.repeat(parseInt(data.review.rating));
+                
+                // Lấy ngày hiện tại
+                const dateNow = new Date().toLocaleDateString('vi-VN');
+
+                const newReviewHtml = `
+                    <div class="card border-0 shadow-sm mb-3 animate__animated animate__fadeIn">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="fw-bold mb-1">${escapeHtml(data.review.user_name)}</h6>
+                                <span class="text-warning small">
+                                    ${starsHtml}
+                                </span>
+                            </div>
+                            <small class="text-muted d-block mb-2">Vừa xong</small>
+                            <p class="mb-0">${escapeHtml(data.review.comment).replace(/\n/g, '<br>')}</p>
+                        </div>
+                    </div>
+                `;
+
+                // C. Chèn review mới lên đầu danh sách
+                const list = document.querySelector('.review-list');
+                list.insertAdjacentHTML('afterbegin', newReviewHtml);
+
+                // D. Thông báo thành công (Dùng Toast có sẵn)
+                const toastBody = document.querySelector('#liveToast .toast-body');
+                toastBody.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> Cảm ơn bạn đã đánh giá sản phẩm';
+                const toastEl = document.getElementById('liveToast');
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Lỗi kết nối hoặc dữ liệu server không hợp lệ');
+        })
+        .finally(() => {
+            // Khôi phục nút
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        });
+    });
+
+    // Hàm phụ trợ để tránh lỗi XSS khi chèn HTML
+    function escapeHtml(text) {
+        if (!text) return text;
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 </script>
+
