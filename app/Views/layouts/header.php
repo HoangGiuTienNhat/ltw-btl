@@ -79,4 +79,4 @@
             </div>
         </div>
     </nav>
-    <main class="flex-grow-1">
+    <main class="flex-grow-1 d-flex flex-column">

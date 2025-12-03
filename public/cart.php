@@ -60,7 +60,7 @@ include '../app/Views/layouts/header.php';
 <?php unset($_SESSION['cart_message']); ?>
 <?php endif; ?>
 
-<div class="container py-5">
+<div class="container py-5 flex-grow-1" style="background-color: #f5f5f5;">
     <h2 class="fw-bold mb-4">Giỏ hàng của bạn</h2>
 
     <?php if (isset($_SESSION['cart']) && count($_SESSION['cart']) > 0): ?>
