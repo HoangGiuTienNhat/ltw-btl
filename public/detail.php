@@ -38,7 +38,7 @@ if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
 
 ?>
 
-<div class="container py-4">
+<div class="container py-4" style="background-color: #f5f5f5;">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none">Trang chủ</a></li>

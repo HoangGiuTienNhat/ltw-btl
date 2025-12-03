@@ -69,7 +69,7 @@ function buildUrl($key, $value) {
 include '../app/Views/layouts/header.php';
 ?>
 
-<div class="container py-4">
+<div class="container py-4" style="background-color: #f5f5f5; ">
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-dark">Trang chủ</a></li>

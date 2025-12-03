@@ -54,7 +54,7 @@ $brands = [
 include '../app/Views/layouts/header.php';
 ?>
 
-<div class="container-fluid py-3">
+<div class="container-fluid">
     <div class="row g-3">
         
         <div class="col-xxl-2 d-none d-xxl-block text-end">
@@ -63,8 +63,8 @@ include '../app/Views/layouts/header.php';
             </a>
         </div>
 
-        <div class="col-12 col-xxl-8">
-            <div class="main-wrapper rounded p-3 p-md-4">
+        <div class="col-12 col-xxl-8" style="margin-top: 0;">
+            <div class="main-wrapper p-3 p-md-4">
                 
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
