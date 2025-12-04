@@ -10,7 +10,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(200); exit; }
 require_once __DIR__ . '/../../config/database.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-    // fetch orders with items
+    // If id provided, return single order with items and user info
+    if (isset($_GET['id'])) {
+        $id = intval($_GET['id']);
+        $stmt = $conn->prepare('SELECT o.*, u.full_name AS user_name FROM orders o LEFT JOIN users u ON o.user_id = u.id WHERE o.id = :id LIMIT 1');
+        $stmt->execute([':id'=>$id]);
+        $order = $stmt->fetch();
+        if (!$order) { http_response_code(404); echo json_encode(['error'=>'Order not found']); exit; }
+        $stmt2 = $conn->prepare('SELECT * FROM order_items WHERE order_id = :oid');
+        $stmt2->execute([':oid'=>$id]);
+        $order['items'] = $stmt2->fetchAll();
+        echo json_encode($order, JSON_UNESCAPED_UNICODE);
+        exit;
+    }
+
+    // fetch orders with items (list)
     $stmt = $conn->prepare('SELECT * FROM orders ORDER BY created_at DESC');
     $stmt->execute();
     $orders = $stmt->fetchAll();

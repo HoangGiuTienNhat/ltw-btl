@@ -20,6 +20,9 @@ DROP TABLE IF EXISTS users;
 
 DROP TABLE IF EXISTS news;
 
+DROP TABLE IF EXISTS cart_items;
+DROP TABLE IF EXISTS carts;
+
 
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
@@ -149,6 +152,44 @@ INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `product_name`, `pric
 (4, 3, 3, 'Xiaomi 14 Ultra 5G', 26990000.00, 1, 'pic/product/2030.webp'),
 (5, 4, 2, 'Samsung Galaxy S24 Ultra', 28990000.00, 1, 'pic/product/2020.webp'),
 (6, 5, 3, 'Xiaomi 14 Ultra 5G', 26990000.00, 2, 'pic/product/2030.webp');
+-- --------------------------------------------------------
+-- 
+-- Bảng quản lý giỏ hàng (carts) và chi tiết các mặt hàng (cart_items)
+-- Hỗ trợ cả guest (session_id) và user đã đăng nhập (user_id)
+-- 
+
+CREATE TABLE `carts` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) DEFAULT NULL,
+  `session_id` varchar(128) DEFAULT NULL,
+  `status` varchar(32) NOT NULL DEFAULT 'pending',
+  `total_amount` decimal(15,2) DEFAULT 0.00,
+  `shipping_name` varchar(255) DEFAULT NULL,
+  `shipping_phone` varchar(50) DEFAULT NULL,
+  `shipping_address` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `cart_items` (
+  `id` int(11) NOT NULL,
+  `cart_id` int(11) NOT NULL,
+  `product_id` int(11) DEFAULT NULL,
+  `product_name` varchar(255) DEFAULT NULL,
+  `price` decimal(15,2) DEFAULT 0.00,
+  `quantity` int(11) DEFAULT 1,
+  `image` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Set primary keys and auto-increment for carts and cart_items
+ALTER TABLE `carts` ADD PRIMARY KEY (`id`);
+ALTER TABLE `carts` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+ALTER TABLE `cart_items` ADD PRIMARY KEY (`id`);
+ALTER TABLE `cart_items` MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+-- Optional foreign key (commented out by default, enable if needed and if referential integrity desired):
+-- ALTER TABLE `cart_items` ADD CONSTRAINT `fk_cart_items_cart` FOREIGN KEY (`cart_id`) REFERENCES `carts`(`id`) ON DELETE CASCADE;
 
 -- --------------------------------------------------------
 
