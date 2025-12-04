@@ -1,6 +1,29 @@
 <?php
 session_start();
 
+// Cleanup: if this session has a cart in 'processing' older than 10 minutes, cancel it and clear session cart
+try {
+    require_once __DIR__ . '/../config/database.php';
+    $sessionId = session_id();
+    $stmt = $conn->prepare('SELECT id, updated_at, created_at FROM carts WHERE session_id = :session_id AND status = "processing" ORDER BY updated_at DESC LIMIT 1');
+    $stmt->execute([':session_id'=>$sessionId]);
+    $f = $stmt->fetch();
+    if ($f && !empty($f['id'])) {
+        $dt = $f['updated_at'] ? $f['updated_at'] : $f['created_at'];
+        if (strtotime($dt) <= strtotime('-10 minutes')) {
+            // cancel and remove items
+            $upd = $conn->prepare('UPDATE carts SET status = :status, updated_at = :updated_at WHERE id = :id');
+            $upd->execute([':status'=>'cancelled', ':updated_at'=>date('Y-m-d H:i:s'), ':id'=>intval($f['id'])]);
+            $del = $conn->prepare('DELETE FROM cart_items WHERE cart_id = :cart_id'); $del->execute([':cart_id'=>intval($f['id'])]);
+            // clear session cart
+            unset($_SESSION['cart']);
+            $_SESSION['cart_message'] = 'Phiên thanh toán hết hạn, giỏ hàng đã bị hủy.';
+        }
+    }
+} catch (Exception $e) {
+    // ignore cleanup errors
+}
+
 // Xử lý Xóa hoặc Cập nhật (Logic đơn giản ngay tại file view để tiện demo)
 if (isset($_GET['action']) && $_GET['action'] == 'remove' && isset($_GET['id'])) {
     $removeId = $_GET['id'];
@@ -199,7 +222,7 @@ include '../app/Views/layouts/header.php';
                                 </td>
                                 <td><?= number_format($item['price'], 0, ',', '.') ?>đ</td>
                                 <td>
-                                    <input type="number" class="form-control form-control-sm text-center" value="<?= $item['quantity'] ?>" min="1" style="width: 60px;" readonly>
+                                    <input type="number" class="form-control form-control-sm text-center cart-qty" data-product-id="<?= $item['id'] ?>" value="<?= $item['quantity'] ?>" min="1" style="width: 80px;">
                                     </td>
                                 <td class="fw-bold text-danger"><?= number_format($line_total, 0, ',', '.') ?>đ</td>
                                 <td>
@@ -224,7 +247,7 @@ include '../app/Views/layouts/header.php';
                             <span class="fs-5 fw-bold">Tổng cộng:</span>
                             <span class="fs-5 fw-bold text-danger"><?= number_format($total_money, 0, ',', '.') ?>đ</span>
                         </div>
-                        <a href="#" onclick="confirmCheckout()" class="btn btn-dark w-100 py-2">Tiến hành thanh toán</a>
+                        <a href="#" id="btnProceedCheckout" class="btn btn-dark w-100 py-2">Tiến hành thanh toán</a>
                         <a href="index.php" class="btn btn-outline-secondary w-100 mt-2">Tiếp tục mua sắm</a>
                     </div>
                 </div>
@@ -241,8 +264,83 @@ include '../app/Views/layouts/header.php';
 
 <script>
 function confirmCheckout() {
+    // legacy fallback
     if (confirm('Bạn có chắc chắn muốn thanh toán đơn hàng này?')) {
         window.location.href = 'cart.php?action=checkout';
+    }
+}
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+    // quantity change handler
+    document.querySelectorAll('.cart-qty').forEach(function(inp){
+        inp.addEventListener('change', function(e){
+            const pid = this.dataset.productId; const qty = parseInt(this.value) || 0;
+            // build minimal item info for session sync
+            const payload = { action: 'update_quantity', product_id: pid, quantity: qty };
+            fetch('api/cart_actions.php', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) })
+            .then(r=>r.json()).then(j=>{
+                if (j && j.success) {
+                    // update totals on page
+                    location.reload();
+                } else if (j && j.error === 'not_logged_in') {
+                    window.location.href = 'login.php';
+                } else {
+                    console.error('Update qty failed', j);
+                    alert('Cập nhật số lượng thất bại');
+                }
+            }).catch(err=>{ console.error(err); alert('Lỗi kết nối'); });
+        });
+    });
+
+    // proceed checkout: set processing and show confirmation overlay
+    const btn = document.getElementById('btnProceedCheckout');
+    if (btn) btn.addEventListener('click', function(e){ e.preventDefault();
+        // set processing on server
+        fetch('api/cart_actions.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'set_processing'}) })
+        .then(r=>r.json()).then(j=>{
+            if (j && j.success) {
+                showPaymentConfirmOverlay();
+            } else {
+                alert('Không thể bắt đầu thanh toán');
+            }
+        }).catch(err=>{ console.error(err); alert('Lỗi kết nối'); });
+    });
+
+});
+
+function showPaymentConfirmOverlay(){
+    // simple overlay modal inserted into body
+    let modal = document.getElementById('paymentConfirmModal');
+    if (!modal) {
+        modal = document.createElement('div'); modal.id = 'paymentConfirmModal';
+        modal.style.position = 'fixed'; modal.style.left='0'; modal.style.top='0'; modal.style.right='0'; modal.style.bottom='0';
+        modal.style.background='rgba(0,0,0,0.6)'; modal.style.display='flex'; modal.style.alignItems='center'; modal.style.justifyContent='center'; modal.style.zIndex='9999';
+        modal.innerHTML = `<div style="background:#fff;padding:24px;border-radius:8px;max-width:600px;width:100%;box-shadow:0 6px 24px rgba(0,0,0,.2)">`+
+            `<h4>Xác nhận thanh toán</h4><p>Vui lòng xác nhận bạn đã thanh toán để hoàn tất đơn hàng.</p>`+
+            `<div style="text-align:right;margin-top:16px">`+
+            `<button id="btnCancelPayment" class="btn btn-outline-secondary me-2">Hủy</button>`+
+            `<button id="btnConfirmPayment" class="btn btn-primary">Xác nhận thanh toán</button>`+
+            `</div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('btnCancelPayment').addEventListener('click', function(){ modal.remove(); });
+        document.getElementById('btnConfirmPayment').addEventListener('click', function(){
+            // call confirm API
+            fetch('api/cart_actions.php', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action:'confirm_payment'}) })
+            .then(r=>r.json()).then(j=>{
+                if (j && j.success) {
+                    alert('Thanh toán thành công. Mã đơn: ' + j.order_number);
+                    window.location.href = 'history.php';
+                } else if (j && j.error === 'not_logged_in') {
+                    window.location.href = 'login.php';
+                } else {
+                    alert('Xác nhận thất bại');
+                }
+            }).catch(err=>{ console.error(err); alert('Lỗi kết nối'); });
+        });
+    } else {
+        modal.style.display = 'flex';
     }
 }
 </script>

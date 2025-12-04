@@ -25,6 +25,14 @@ DROP TABLE IF EXISTS carts;
 
 
 
+
+
+DROP TABLE IF EXISTS `faq`;
+DROP TABLE IF EXISTS `settings`;
+
+
+
+
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
@@ -38,6 +46,65 @@ SET time_zone = "+00:00";
 --
 -- Cơ sở dữ liệu: `techstore_db`
 --
+
+
+
+
+
+
+
+
+
+
+CREATE TABLE `settings` (
+  `setting_key` varchar(50) NOT NULL,
+  `setting_value` text DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `settings` (`setting_key`, `setting_value`) VALUES
+('address', '939 Kha Vạn Cân, Phường Linh Trung, Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam'),
+('email', 'support@techshop.vn'),
+('footer_col1', '{\"call_buy\":\"1900 1009\",\"call_complain\":\"1800 1062\",\"call_warranty\":\"1900 232 464\"}'),
+('footer_col2', '[{\"text\":\"Giới thiệu công ty\",\"url\":\"\\/gioi-thieu\"},{\"text\":\"Tuyển dụng\",\"url\":\"\\/tuyen-dung\"}]'),
+('footer_socials', '{\"facebook\":\"https:\\/\\/www.youtube.com\\/watch?v=xvFZjo5PgG0\",\"youtube\":\"https:\\/\\/www.youtube.com\\/watch?v=xvFZjo5PgG0\",\"zalo\":\"Zalo OA\"}'),
+('google_map', '<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d571.3593343612715!2d106.76016961475348!3d10.860629186827136!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175277068982597%3A0xaa699df27cfcdee4!2sThegioiic!5e0!3m2!1svi!2s!4v1764737040480!5m2!1svi!2s\" width=\"600\" height=\"450\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\" referrerpolicy=\"no-referrer-when-downgrade\"></iframe>'),
+('hotline', '1900 1000'),
+('partner_logos', '[\"uploads\\/1764692096_692f10809b928_download.png\"]'),
+('site_banner', '[\"uploads\\/1764734647_692fb6b7331b5_download.jpg\",\"uploads\\/1764737627_692fc25bc3713_download.jpg\",\"uploads\\/1764737632_692fc26088b92_download.png\"]'),
+('site_logo', 'uploads/1764690284_692f096c2ee39_download.png'),
+('site_title', '2246'),
+('slogan', 'Chuyên cung cấp laptop, điện thoại, phụ kiện chất lượng cao.');
+
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`setting_key`);
+
+-- --------------------------------------------------------
+-- Bảng faq
+-- --------------------------------------------------------
+CREATE TABLE `faq` (
+  `id` int(11) NOT NULL,
+  `question` text NOT NULL,
+  `answer` text NOT NULL,
+  `status` tinyint(4) DEFAULT 1 COMMENT '1: Hiển thị, 0: Ẩn',
+  `created_at` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `faq` (`id`, `question`, `answer`, `status`, `created_at`) VALUES
+(1, 'Shop có ship COD toàn quốc không?', 'Có, chúng tôi hỗ trợ ship COD toàn quốc cho mọi đơn hàng.', 1, '2025-12-02 16:55:50'),
+(2, 'Bảo hành sản phẩm bao lâu?', 'Tùy theo sản phẩm, thường là 12 tháng chính hãng.', 1, '2025-12-02 16:55:50'),
+(3, 'Có hỗ trợ trả góp không?', 'Có hỗ trợ trả góp 0% qua thẻ tín dụng.', 1, '2025-12-02 16:55:50'),
+(6, 'Admin đẹp trai', 'Admin đẹp trai', 0, '2025-12-03 10:37:03');
+
+ALTER TABLE `faq`
+  ADD PRIMARY KEY (`id`);
+
+ALTER TABLE `faq`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+SET FOREIGN_KEY_CHECKS=1;
+
+-- Hoàn tất
+SELECT 'Cài đặt bảng settings và faq thành công trong database techstore_db!' AS message;
 
 -- --------------------------------------------------------
 

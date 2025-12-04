@@ -36,9 +36,18 @@ if ($method === 'GET') {
 
     $where = [];
     $params = [];
-    // By default, exclude carts that were already converted to orders (completed)
+    // Cleanup: cancel processing carts older than 10 minutes and remove their items
+    try {
+        $conn->exec("UPDATE carts SET status = 'cancelled', updated_at = NOW() WHERE status = 'processing' AND TIMESTAMPDIFF(MINUTE, IFNULL(updated_at, created_at), NOW()) > 10");
+        // remove items for cancelled carts
+        $conn->exec("DELETE ci FROM cart_items ci JOIN carts c ON ci.cart_id = c.id WHERE c.status = 'cancelled'");
+    } catch (Exception $e) {
+        // ignore cleanup errors
+    }
+
+    // By default, exclude carts that were already converted to orders (completed) or cancelled
     if ($status) { $where[] = 'c.status = :status'; $params[':status'] = $status; }
-    else { $where[] = "c.status <> 'completed'"; }
+    else { $where[] = "c.status NOT IN ('completed','cancelled')"; }
     if ($q) { $where[] = '(c.session_id LIKE :q OR u.full_name LIKE :q)'; $params[':q'] = '%'.$q.'%'; }
     $whereSql = $where ? ('WHERE '.implode(' AND ', $where)) : '';
 
@@ -100,11 +109,50 @@ if ($method === 'PUT') {
     foreach ($allowed as $f){ if (isset($input[$f])){ $fields[] = "$f = :$f"; $params[':'.$f] = $input[$f]; } }
     if (empty($fields)) { echo json_encode(['success'=>true]); exit; }
     $params[':updated_at'] = date('Y-m-d H:i:s');
-    $sql = 'UPDATE carts SET ' . implode(', ', $fields) . ', updated_at = :updated_at WHERE id = :id';
-    $stmt = $conn->prepare($sql);
-    $stmt->execute($params);
-    echo json_encode(['success'=>true]);
-    exit;
+    // If status is being set to completed, create an order from cart items (transactional)
+    $isCompleting = isset($input['status']) && $input['status'] === 'completed';
+    try {
+        if ($isCompleting) {
+            // load cart and items
+            $stmt0 = $conn->prepare('SELECT * FROM carts WHERE id = :id FOR UPDATE');
+            $conn->beginTransaction();
+            $stmt0->execute([':id'=>$id]);
+            $cart = $stmt0->fetch();
+            if (!$cart) { $conn->rollBack(); http_response_code(404); echo json_encode(['error'=>'Cart not found']); exit; }
+            if ($cart['status'] === 'completed') { $conn->rollBack(); echo json_encode(['success'=>true,'note'=>'already completed']); exit; }
+            $stmtItems = $conn->prepare('SELECT * FROM cart_items WHERE cart_id = :id'); $stmtItems->execute([':id'=>$id]);
+            $items = $stmtItems->fetchAll();
+            // require Order model
+            require_once __DIR__ . '/../../app/Models/Order.php';
+            $orderModel = new Order($conn);
+            // prepare cartItems in expected format for Order::create (id,name,price,quantity,image)
+            $orderItems = [];
+            $total = 0;
+            foreach ($items as $it){
+                $orderItems[] = ['id'=>$it['product_id'],'name'=>$it['product_name'],'price'=>$it['price'],'quantity'=>$it['quantity'],'image'=>$it['image']];
+                $total += ($it['price'] * $it['quantity']);
+            }
+            $orderNumber = $orderModel->create($cart['user_id'], $orderItems, $total);
+            // update cart status
+            $sql = 'UPDATE carts SET ' . implode(', ', $fields) . ', updated_at = :updated_at WHERE id = :id';
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
+            $conn->commit();
+            echo json_encode(['success'=>true,'order_number'=>$orderNumber]);
+            exit;
+        } else {
+            $sql = 'UPDATE carts SET ' . implode(', ', $fields) . ', updated_at = :updated_at WHERE id = :id';
+            $stmt = $conn->prepare($sql);
+            $stmt->execute($params);
+            echo json_encode(['success'=>true]);
+            exit;
+        }
+    } catch (Exception $e) {
+        if ($conn->inTransaction()) $conn->rollBack();
+        http_response_code(500);
+        echo json_encode(['error'=>$e->getMessage()]);
+        exit;
+    }
 }
 
 // DELETE cart and its items
