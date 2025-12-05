@@ -115,6 +115,12 @@ if ($method === 'PUT') {
     $isCancelling = isset($input['status']) && $input['status'] === 'cancelled';
     try {
         if ($isCancelling) {
+            // Retrieve session_id for this cart so we can clear the user's session
+            $stmtSession = $conn->prepare('SELECT session_id FROM carts WHERE id = :id LIMIT 1');
+            $stmtSession->execute([':id' => $id]);
+            $cartRow = $stmtSession->fetch(PDO::FETCH_ASSOC);
+            $sessionToClear = $cartRow && !empty($cartRow['session_id']) ? $cartRow['session_id'] : null;
+
             // Load cart items to restore inventory
             $stmtItems = $conn->prepare('SELECT product_id, quantity FROM cart_items WHERE cart_id = :id');
             $stmtItems->execute([':id'=>$id]);
@@ -131,6 +137,30 @@ if ($method === 'PUT') {
             $sql = 'UPDATE carts SET status = :status, updated_at = :updated_at WHERE id = :id';
             $stmt = $conn->prepare($sql);
             $stmt->execute([':status'=>'cancelled', ':updated_at'=>date('Y-m-d H:i:s'), ':id'=>$id]);
+
+            // Attempt to clear PHP session data for that session id (works when session.save_handler = files)
+            if ($sessionToClear) {
+                try {
+                    $saveHandler = ini_get('session.save_handler');
+                    if ($saveHandler === 'files') {
+                        $savePath = ini_get('session.save_path');
+                        if (!$savePath) $savePath = sys_get_temp_dir();
+                        // session files are named sess_{session_id}
+                        $sessFile = rtrim($savePath, '/\\') . DIRECTORY_SEPARATOR . 'sess_' . $sessionToClear;
+                        if (file_exists($sessFile)) {
+                            @unlink($sessFile);
+                            // also try to remove any related .lock files (some setups)
+                            @unlink($sessFile . '.lock');
+                        }
+                    } else {
+                        // For non-file session handlers (redis, memcached, etc.) we cannot reliably delete from here.
+                        // As a fallback we mark the cart as cancelled (already done) and admin may notify user.
+                    }
+                } catch (Exception $ex) {
+                    // ignore session clear errors
+                }
+            }
+
             echo json_encode(['success'=>true]);
             exit;
         }
