@@ -1,16 +1,17 @@
+<?php
+session_start();
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TechStore - Công nghệ chính hãng</title>
-    
+    <title>Các bài viết về công nghệ</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
-    
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
         <div class="container-xxl">
             <a class="navbar-brand fw-bold text-primary fs-3 d-flex align-items-center gap-2" href="index.php">
@@ -25,19 +26,11 @@
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                     <li class="nav-item"><a class="nav-link fw-semibold px-3" href="index.php">Trang chủ</a></li>
                     <li class="nav-item"><a class="nav-link fw-semibold px-3" href="products.php">Sản phẩm</a></li>
-                    <!-- <li class="nav-item"><a class="nav-link fw-semibold px-3" href="#">Giới thiệu</a></li> -->
                     <li class="nav-item"><a class="nav-link fw-semibold px-3" href="news.php">Bài viết</a></li>
                     <li class="nav-item"><a class="nav-link fw-semibold px-3" href="contact.php">Liên hệ</a></li>
                 </ul>
                 
                 <div class="d-flex flex-column flex-lg-row align-items-lg-center gap-3 mt-3 mt-lg-0">
-                    <form class="d-flex" role="search" action="products.php" method="GET">
-                        <div class="input-group">
-                            <input class="form-control form-control-sm bg-light border-end-0" type="search" name="q" placeholder="Tìm sản phẩm..." value="<?= isset($_GET['q']) ? htmlspecialchars($_GET['q']) : '' ?>">
-                            <button class="btn btn-light border border-start-0 text-muted" type="submit"><i class="bi bi-search"></i></button>
-                        </div>
-                    </form>
-
                     <div class="d-flex align-items-center gap-3 justify-content-between justify-content-lg-start">
                         <div class="d-flex gap-3 align-items-center">
                             <a href="cart.php" class="text-dark fs-5 position-relative">
@@ -58,7 +51,7 @@
                         </div>
 
                         <?php
-                        require_once dirname(__DIR__, 2) . '/Controllers/AuthController.php';
+                        require_once '../app/Controllers/AuthController.php';
                         $currentUser = AuthController::getCurrentUser();
                         if($currentUser): ?>
                             <div class="dropdown">
@@ -81,3 +74,36 @@
         </div>
     </nav>
     <main class="flex-grow-1 d-flex flex-column">
+        <div class="container py-4" style="background-color: #f5f5f5;">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="index.php" class="text-decoration-none text-dark">Trang chủ</a></li>
+                    <li class="breadcrumb-item active">Bài viết</li>
+                </ol>
+            </nav>
+            
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold text-dark m-0">Các bài viết</h2>
+                
+                <form id="search-form" class="m-2" onsubmit="handleSearch(event)" style="max-width: 400px; width: 100%;">
+                    <div class="input-group shadow-sm">
+                        <input type="text" id="search-keyword" class="form-control border-1 border-info" placeholder="Nhập từ khóa tiêu đề, nội dung..." aria-label="Từ khóa tìm kiếm">
+                        <button class="btn btn-info" type="button" onclick="handleSearch(event)">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div id="news-container" class="row row-cols-1 row-cols-md-3 g-4"></div>
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul id="pagination" class="pagination justify-content-center"></ul>
+            </nav>
+        </div>
+
+        <script src="news.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                loadNewsList('news-container', 6, 1); 
+            });
+        </script>
+<?php include '../app/Views/layouts/footer.php'; ?>

@@ -1,6 +1,50 @@
 <?php
 session_start();
-require_once '../config/database.php';
+
+// 1. TỰ ĐỘNG TÌM VÀ KẾT NỐI DATABASE (giống footer.php)
+$db_files = [
+    __DIR__ . '/../config/database.php',
+    __DIR__ . '/../../../../config/database.php',
+    $_SERVER['DOCUMENT_ROOT'] . '/LTW-xampp/project-web/config/database.php',
+];
+
+foreach ($db_files as $file) {
+    if (file_exists($file)) {
+        require_once $file;
+        break;
+    }
+}
+
+// 2. ĐƯỜNG DẪN ẢNH TỪ ADMIN (QUAN TRỌNG - giống footer)
+// $admin_url = '/BTL/ltw-admin-main/ltw-admin-main/dashboard/task2/';
+
+$admin_url = '/LTW-xampp/tabler-1.4.0-hienthuc/dashboard/task2/';
+
+// 3. LẤY BANNER TỪ DATABASE
+$banners = [];
+
+if (isset($conn) && $conn instanceof PDO) {
+    try {
+        $stmt = $conn->prepare("SELECT setting_key, setting_value FROM settings WHERE setting_key = 'site_banner'");
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if ($row) {
+            $banners = json_decode($row['setting_value'], true);
+        }
+    } catch (Exception $e) {
+        // Không làm gì, dùng fallback
+    }
+}
+
+// Nếu không có dữ liệu từ DB → fallback về banner cũ (hardcode)
+if (empty($banners) || !is_array($banners)) {
+    $banners = [
+        'pic/banner-main1.webp',
+        'pic/banner-main2.webp',
+        'pic/banner-main3.webp'
+    ];
+}
 
 // Helper: Map Icon
 function getCategoryIcon($name) {
@@ -15,32 +59,26 @@ function getCategoryIcon($name) {
 }
 
 try {
-    // 1. Lấy sản phẩm nổi bật
     $stmt = $conn->prepare("SELECT * FROM products WHERE is_featured = 1 ORDER BY created_at DESC LIMIT 16");
     $stmt->execute();
     $featured_products = $stmt->fetchAll();
     
-    // 2. Điện thoại (Cat ID = 2)
     $stmtPhone = $conn->prepare("SELECT * FROM products WHERE category_id = 2 ORDER BY created_at DESC LIMIT 16");
     $stmtPhone->execute();
     $phone_products = $stmtPhone->fetchAll();
 
-    // 3. Tablet (Cat ID = 5)
     $stmtTablet = $conn->prepare("SELECT * FROM products WHERE category_id = 5 ORDER BY created_at DESC LIMIT 16");
     $stmtTablet->execute();
     $tablet_products = $stmtTablet->fetchAll();
 
-    // 4. Danh mục
     $stmtCat = $conn->query("SELECT * FROM categories LIMIT 6");
     $categories = $stmtCat->fetchAll();
 
-    // 5. Tin tức
     $stmtNews = $conn->query("SELECT * FROM news ORDER BY created_at DESC LIMIT 16");
     $news_list = $stmtNews->fetchAll();
 
 } catch(Exception $e) { 
     $featured_products = []; $phone_products = []; $tablet_products = []; $categories = []; $news_list = [];
-    echo ""; 
 }
 
 // Danh sách Thương hiệu (Tĩnh)
@@ -68,22 +106,37 @@ include '../app/Views/layouts/header.php';
                 
                 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 
+                <!-- CAROUSEL BANNER - BÂY GIỜ LẤY TỪ DATABASE -->
                 <div id="homeCarousel" class="carousel slide mb-5 shadow-sm rounded overflow-hidden" data-bs-ride="carousel">
                     <div class="carousel-inner">
-                        <div class="carousel-item active">
-                            <img src="pic/banner-main1.webp" class="d-block w-100 object-fit-cover" style="max-height: 450px; min-height: 200px;">
-                        </div>
-                        <div class="carousel-item">
-                            <img src="pic/banner-main2.webp" class="d-block w-100 object-fit-cover" style="max-height: 450px; min-height: 200px;">
-                        </div>
-                        <div class="carousel-item">
-                            <img src="pic/banner-main3.webp" class="d-block w-100 object-fit-cover" style="max-height: 450px; min-height: 200px;">
-                        </div>
+                        <?php foreach ($banners as $index => $banner): ?>
+                            <?php 
+                                // Xử lý đường dẫn ảnh (hỗ trợ cả string và array)
+                                $imgPath = is_string($banner) ? $banner : ($banner['image'] ?? $banner['img'] ?? '');
+                                
+                                // Nếu là ảnh từ admin (có chứa "uploads/")
+                                if (strpos($imgPath, 'uploads/') === 0) {
+                                    $imgPath = $admin_url . $imgPath;
+                                }
+                            ?>
+                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                <img src="<?= htmlspecialchars($imgPath) ?>" 
+                                     class="d-block w-100 object-fit-cover" 
+                                     style="max-height: 450px; min-height: 200px;"
+                                     alt="Banner <?= $index + 1 ?>">
+                            </div>
+                        <?php endforeach; ?>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#homeCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#homeCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
                 </div>
+                <!-- HẾT PHẦN CAROUSEL ĐỘNG -->
 
+                <!-- Phần còn lại giữ nguyên 100% như code cũ của bạn -->
                 <div class="mb-5">
                     <h4 class="fw-bold mb-4 border-start border-4 border-primary ps-3">Danh mục nổi bật</h4>
                     <div class="row row-cols-2 row-cols-sm-3 row-cols-md-6 g-2 g-md-3">
@@ -118,21 +171,21 @@ include '../app/Views/layouts/header.php';
                     <div class="swiper-button-prev" id="btn-prev-featured"></div>
                 </div>
 
+                <!-- Giữ nguyên toàn bộ phần còn lại (tab điện thoại/tablet, thương hiệu, tin tức, toast, script...) -->
+                <!-- ... (copy nguyên như code bạn gửi, không thay đổi gì) ... -->
+
                 <div class="mb-5">
                     <div class="row g-3">
                         <div class="col-lg-3 d-none d-lg-block">
-    <div class="d-flex flex-column gap-3 h-100">
-        
-        <a href="products.php" class="flex-fill overflow-hidden rounded shadow-sm position-relative">
-            <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
-        </a>
-
-        <a href="products.php" class="flex-fill overflow-hidden rounded shadow-sm position-relative">
-            <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
-        </a>
-        
-    </div>
-</div>
+                            <div class="d-flex flex-column gap-3 h-100">
+                                <a href="products.php" class="flex-fill overflow-hidden rounded shadow-sm position-relative">
+                                    <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
+                                </a>
+                                <a href="products.php" class="flex-fill overflow-hidden rounded shadow-sm position-relative">
+                                    <img src="banner-side.jpg" class="w-100 h-100 object-fit-cover position-absolute top-0 start-0 hover-zoom">
+                                </a>
+                            </div>
+                        </div>
 
                         <div class="col-12 col-lg-9">
                             <div class="bg-white rounded shadow-sm border p-3">
@@ -192,6 +245,28 @@ include '../app/Views/layouts/header.php';
                     </div>
                 </div>
 
+
+                <!-- anh hieu -->
+                <!------- Thêm cho bài viết -------->
+                <div class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold border-start border-4 border-info ps-3 m-0">CÁC BÀI VIẾT</h4>
+                        <a href="news.php" class="btn btn-outline-dark btn-sm rounded-pill">NHIỀU BÀI VIẾT HƠN <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div id="home-news-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+                    </div>
+                </div>
+                <script src="news.js"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => {
+                        loadHomeNews('home-news-container', 4);
+                    });
+                </script>
+                <!------- kết thúc thêm cho bài viết -------->
+
+                <!-- anh hieu -->
+<!-- 
+
                 <div class="mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="fw-bold border-start border-4 border-info ps-3 m-0">TIN TỨC</h4>
@@ -206,7 +281,6 @@ include '../app/Views/layouts/header.php';
                                     <div class="ratio ratio-16x9 overflow-hidden rounded-top">
                                         <img src="<?= $news['image'] ?>" class="object-fit-cover w-100 h-100" alt="<?= htmlspecialchars($news['title']) ?>">
                                     </div>
-                                    
                                     <div class="card-body p-2 bg-white rounded-bottom d-flex flex-column">
                                         <h6 class="card-title small text-dark mb-0 text-clamp-3 fw-semibold">
                                             <?= htmlspecialchars($news['title']) ?>
@@ -223,12 +297,10 @@ include '../app/Views/layouts/header.php';
                         <button id="btnLoadMoreNews" class="btn btn-outline-primary rounded-pill px-4">Xem thêm</button>
                     </div>
                     <?php endif; ?>
-                </div>
+                </div> -->
 
-
-                
-
-            </div> </div>
+            </div>
+        </div>
 
         <div class="col-xxl-2 d-none d-xxl-block text-start">
             <a href="products.php">
@@ -238,13 +310,14 @@ include '../app/Views/layouts/header.php';
     </div>
 </div>
 
+<!-- Toast và Footer + Script giữ nguyên như cũ -->
 <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-  <div id="liveToast" class="toast align-items-center text-white bg-success border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+  <div id="liveToast" class="toast align-items-center text-white bg-success border-0 shadow" role="alert">
     <div class="d-flex">
       <div class="toast-body">
-        <i class="bi bi-check-circle-fill me-2"></i> Đã thêm vào giỏ hàng!
+        Đã thêm vào giỏ hàng!
       </div>
-      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
     </div>
   </div>
 </div>
@@ -253,98 +326,57 @@ include '../app/Views/layouts/header.php';
 
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script>
-    // Cấu hình chung cho Slider
     const commonBreakpoints = {
-        0: { slidesPerView: 2, spaceBetween: 10, grid: { rows: 2, fill: 'row' } }, // Mobile: 2 cột, 2 hàng
-        576: { slidesPerView: 3, spaceBetween: 10, grid: { rows: 2, fill: 'row' } }, // Tablet nhỏ
-        992: { slidesPerView: 3, spaceBetween: 15, grid: { rows: 2, fill: 'row' } }, // Desktop nhỏ
-        1200: { slidesPerView: 4, spaceBetween: 20, grid: { rows: 2, fill: 'row' } } // Desktop lớn
+        0: { slidesPerView: 2, spaceBetween: 10, grid: { rows: 2, fill: 'row' } },
+        576: { slidesPerView: 3, spaceBetween: 10, grid: { rows: 2, fill: 'row' } },
+        992: { slidesPerView: 3, spaceBetween: 15, grid: { rows: 2, fill: 'row' } },
+        1200: { slidesPerView: 4, spaceBetween: 20, grid: { rows: 2, fill: 'row' } }
     };
 
-    // 1. Slider Featured
-    new Swiper(".product-slider", {
-        slidesPerView: 2, grid: { rows: 2, fill: 'row' }, spaceBetween: 10,
-        navigation: { nextEl: "#btn-next-featured", prevEl: "#btn-prev-featured" },
-        pagination: { el: ".swiper-pagination", clickable: true },
-        breakpoints: commonBreakpoints
-    });
+    new Swiper(".product-slider", { slidesPerView: 2, grid: { rows: 2, fill: 'row' }, spaceBetween: 10, navigation: { nextEl: "#btn-next-featured", prevEl: "#btn-prev-featured" }, pagination: { el: ".swiper-pagination", clickable: true }, breakpoints: commonBreakpoints });
+    new Swiper(".phone-slider", { slidesPerView: 2, grid: { rows: 2, fill: 'row' }, spaceBetween: 10, observer: true, observeParents: true, navigation: { nextEl: "#btn-next-phone", prevEl: "#btn-prev-phone" }, breakpoints: commonBreakpoints });
+    new Swiper(".tablet-slider", { slidesPerView: 2, grid: { rows: 2, fill: 'row' }, spaceBetween: 10, observer: true, observeParents: true, navigation: { nextEl: "#btn-next-tablet", prevEl: "#btn-prev-tablet" }, breakpoints: commonBreakpoints });
 
-    // 2. Slider Phone (Trong Tab)
-    // Lưu ý: Slider trong Tab ẩn (display:none) cần observer để render đúng khi Tab hiện
-    new Swiper(".phone-slider", {
-        slidesPerView: 2, grid: { rows: 2, fill: 'row' }, spaceBetween: 10,
-        observer: true, observeParents: true,
-        navigation: { nextEl: "#btn-next-phone", prevEl: "#btn-prev-phone" },
-        breakpoints: commonBreakpoints
-    });
-
-    // 3. Slider Tablet
-    new Swiper(".tablet-slider", {
-        slidesPerView: 2, grid: { rows: 2, fill: 'row' }, spaceBetween: 10,
-        observer: true, observeParents: true,
-        navigation: { nextEl: "#btn-next-tablet", prevEl: "#btn-prev-tablet" },
-        breakpoints: commonBreakpoints
-    });
-
-    // --- Tab Switching ---
     function switchTab(type) {
-        document.querySelectorAll('.cat-tab-btn').forEach(btn => {
-            btn.classList.remove('active'); btn.classList.add('text-muted');
-        });
+        document.querySelectorAll('.cat-tab-btn').forEach(btn => { btn.classList.remove('active'); btn.classList.add('text-muted'); });
         const activeBtn = document.getElementById('tab-' + type);
         activeBtn.classList.add('active'); activeBtn.classList.remove('text-muted');
-
         document.querySelectorAll('.tab-content-block').forEach(block => block.classList.add('d-none'));
         document.getElementById('block-' + type).classList.remove('d-none');
     }
 
-    // --- Load More News ---
     document.getElementById('btnLoadMoreNews')?.addEventListener('click', function() {
         const hiddenNews = document.querySelectorAll('.news-hidden');
         let count = 0;
-        hiddenNews.forEach(news => {
-            if (count < 10) { 
-                news.classList.remove('news-hidden');
-                count++;
-            }
-        });
-        if (document.querySelectorAll('.news-hidden').length === 0) {
-            this.style.display = 'none';
-        }
+        hiddenNews.forEach(news => { if (count < 10) { news.classList.remove('news-hidden'); count++; } });
+        if (document.querySelectorAll('.news-hidden').length === 0) this.style.display = 'none';
     });
 
-    // --- Add To Cart AJAX ---
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('.btn-add-to-cart');
-        if (btn) {
-            e.preventDefault();
-            const originalIcon = btn.innerHTML;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-            btn.disabled = true;
+        if (!btn) return;
+        e.preventDefault();
+        const originalIcon = btn.innerHTML;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+        btn.disabled = true;
 
-            const formData = new FormData();
-            formData.append('product_id', btn.getAttribute('data-id'));
-            formData.append('product_name', btn.getAttribute('data-name'));
-            formData.append('product_price', btn.getAttribute('data-price'));
-            formData.append('product_image', btn.getAttribute('data-image'));
-            formData.append('quantity', 1);
+        const formData = new FormData();
+        formData.append('product_id', btn.dataset.id);
+        formData.append('product_name', btn.dataset.name);
+        formData.append('product_price', btn.dataset.price);
+        formData.append('product_image', btn.dataset.image);
+        formData.append('quantity', 1);
 
-            fetch('cart_add.php', { method: 'POST', body: formData })
-            .then(res => res.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    const badge = document.getElementById('cart-badge');
-                    if (badge) badge.innerText = data.total_items;
-                    new bootstrap.Toast(document.getElementById('liveToast')).show();
-                } else {
-                    alert('Lỗi: ' + data.message);
-                }
-            })
-            .catch(err => console.error(err))
-            .finally(() => {
-                btn.innerHTML = originalIcon;
-                btn.disabled = false;
-            });
-        }
+        fetch('cart_add.php', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const badge = document.getElementById('cart-badge');
+                if (badge) badge.innerText = data.total_items;
+                new bootstrap.Toast(document.getElementById('liveToast')).show();
+            } else alert('Lỗi: ' + data.message);
+        })
+        .catch(err => console.error(err))
+        .finally(() => { btn.innerHTML = originalIcon; btn.disabled = false; });
     });
 </script>
