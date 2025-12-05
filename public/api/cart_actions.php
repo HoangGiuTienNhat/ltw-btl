@@ -36,6 +36,14 @@ try {
             if ($pid === null) { http_response_code(400); echo json_encode(['error'=>'Missing product_id']); exit; }
             if ($qty <= 0) { unset($_SESSION['cart'][$pid]); }
             else {
+                // check inventory
+                $chk = $conn->prepare('SELECT amount FROM products WHERE id = :id');
+                $chk->execute([':id'=>$pid]);
+                $prod = $chk->fetch();
+                if (!$prod) { http_response_code(400); echo json_encode(['error'=>'Product not found']); exit; }
+                $available = intval($prod['amount']);
+                if ($qty > $available) { http_response_code(400); echo json_encode(['error'=>'Insufficient stock. Available: '.$available]); exit; }
+
                 if (!isset($_SESSION['cart'][$pid])) {
                     // minimal fields required
                     $_SESSION['cart'][$pid] = ['id'=>$pid, 'name'=>($input['name']?:''), 'price'=>($input['price']?:0), 'image'=>($input['image']?:null), 'quantity'=>$qty];
@@ -110,6 +118,11 @@ try {
         $totalMoney = 0; $items = [];
         if (!empty($_SESSION['cart'])) { foreach ($_SESSION['cart'] as $it) { $totalMoney += ($it['price'] * $it['quantity']); $items[] = $it; } }
         $orderNumber = $orderModel->create($u['id'], $_SESSION['cart'], $totalMoney);
+        // Deduct inventory
+        $deductStmt = $conn->prepare('UPDATE products SET amount = amount - :qty WHERE id = :product_id');
+        foreach ($_SESSION['cart'] as $it) {
+            $deductStmt->execute([':qty'=>intval($it['quantity']), ':product_id'=>intval($it['id'])]);
+        }
         // mark cart completed
         $upd = $conn->prepare('UPDATE carts SET status = :status, updated_at = :updated_at WHERE id = :id');
         $upd->execute([':status'=>'completed', ':updated_at'=>date('Y-m-d H:i:s'), ':id'=>$cartId]);

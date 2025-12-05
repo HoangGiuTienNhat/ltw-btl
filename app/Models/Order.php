@@ -35,7 +35,7 @@ class Order {
     public function create($userId, $cartItems, $totalAmount) {
         $orderNumber = 'ORD' . time() . rand(100, 999);
 
-        $stmt = $this->conn->prepare("INSERT INTO orders (user_id, order_number, total_amount, status) VALUES (?, ?, ?, 'completed')");
+        $stmt = $this->conn->prepare("INSERT INTO orders (user_id, order_number, total_amount, status) VALUES (?, ?, ?, 'pending')");
         $stmt->execute([$userId, $orderNumber, $totalAmount]);
         $orderId = $this->conn->lastInsertId();
 

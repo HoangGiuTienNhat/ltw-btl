@@ -110,8 +110,31 @@ if ($method === 'PUT') {
     if (empty($fields)) { echo json_encode(['success'=>true]); exit; }
     $params[':updated_at'] = date('Y-m-d H:i:s');
     // If status is being set to completed, create an order from cart items (transactional)
+    // If status is being set to cancelled, restore inventory and delete items
     $isCompleting = isset($input['status']) && $input['status'] === 'completed';
+    $isCancelling = isset($input['status']) && $input['status'] === 'cancelled';
     try {
+        if ($isCancelling) {
+            // Load cart items to restore inventory
+            $stmtItems = $conn->prepare('SELECT product_id, quantity FROM cart_items WHERE cart_id = :id');
+            $stmtItems->execute([':id'=>$id]);
+            $items = $stmtItems->fetchAll();
+            // Restore inventory
+            $restoreStmt = $conn->prepare('UPDATE products SET amount = amount + :qty WHERE id = :product_id');
+            foreach ($items as $it) {
+                $restoreStmt->execute([':qty'=>intval($it['quantity']), ':product_id'=>intval($it['product_id'])]);
+            }
+            // Delete cart items
+            $delItems = $conn->prepare('DELETE FROM cart_items WHERE cart_id = :id');
+            $delItems->execute([':id'=>$id]);
+            // Update cart status
+            $sql = 'UPDATE carts SET status = :status, updated_at = :updated_at WHERE id = :id';
+            $stmt = $conn->prepare($sql);
+            $stmt->execute([':status'=>'cancelled', ':updated_at'=>date('Y-m-d H:i:s'), ':id'=>$id]);
+            echo json_encode(['success'=>true]);
+            exit;
+        }
+
         if ($isCompleting) {
             // load cart and items
             $stmt0 = $conn->prepare('SELECT * FROM carts WHERE id = :id FOR UPDATE');
@@ -133,6 +156,11 @@ if ($method === 'PUT') {
                 $total += ($it['price'] * $it['quantity']);
             }
             $orderNumber = $orderModel->create($cart['user_id'], $orderItems, $total);
+            // Deduct inventory when order is created
+            $deductStmt = $conn->prepare('UPDATE products SET amount = amount - :qty WHERE id = :product_id');
+            foreach ($items as $it) {
+                $deductStmt->execute([':qty'=>intval($it['quantity']), ':product_id'=>intval($it['product_id'])]);
+            }
             // update cart status
             $sql = 'UPDATE carts SET ' . implode(', ', $fields) . ', updated_at = :updated_at WHERE id = :id';
             $stmt = $conn->prepare($sql);

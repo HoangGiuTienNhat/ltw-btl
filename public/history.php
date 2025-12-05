@@ -57,7 +57,7 @@ include '../app/Views/layouts/header.php';
                                         lúc <?= date('H:i d/m/Y', strtotime($order['created_at'])) ?>
                                     </small>
                                 </div>
-                                <span class="badge bg-success">Đã đặt hàng</span>
+                                <span class="badge bg-success"><?= $order['status'] ?></span>
                             </div>
                         </div>
                         <div class="card-body">

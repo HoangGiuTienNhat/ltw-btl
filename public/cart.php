@@ -147,6 +147,18 @@ if (isset($_GET['action']) && $_GET['action'] == 'checkout') {
 
     $orderNumber = $orderModel->create($user['id'], $_SESSION['cart'], $totalMoney);
 
+    // Deduct inventory from products when order is created
+    try{
+        if (!empty($cartId)){
+            $deductStmt = $conn->prepare('UPDATE products SET amount = amount - :qty WHERE id = :product_id');
+            foreach ($_SESSION['cart'] as $item) {
+                $deductStmt->execute([':qty'=>intval($item['quantity']), ':product_id'=>intval($item['id'])]);
+            }
+        }
+    }catch(Exception $e){
+        error_log('Failed to deduct inventory: '.$e->getMessage());
+    }
+
     // Mark persisted cart as completed (converted to order) so admin carts view shows only active carts
     try{
         if (!empty($cartId)){
