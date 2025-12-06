@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="d-flex flex-column min-vh-100">
+    <?php
+    // Initialize user's cart from DB if they're logged in and session cart is empty
+    if (file_exists(__DIR__ . '/../../../public/cart_init.php')) {
+        require_once __DIR__ . '/../../../public/cart_init.php';
+    }
+    ?>
     
     <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm sticky-top">
         <div class="container-xxl">
