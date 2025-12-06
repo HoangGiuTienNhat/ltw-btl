@@ -24,42 +24,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         exit;
     }
 
-    // fetch orders with items (list) - with server-side pagination
-    $page = isset($_GET['page']) ? max(1, intval($_GET['page'])) : 1;
-    $limit = isset($_GET['limit']) ? intval($_GET['limit']) : 15;
-    $offset = ($page - 1) * $limit;
-    
-    // Get total count
-    $countStmt = $conn->prepare('SELECT COUNT(*) as total FROM orders');
-    $countStmt->execute();
-    $countRow = $countStmt->fetch();
-    $total = intval($countRow['total']);
-    $totalPages = ceil($total / $limit);
-    
-    // Fetch paginated orders
-    $stmt = $conn->prepare('SELECT * FROM orders ORDER BY created_at DESC LIMIT :limit OFFSET :offset');
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    // fetch orders with items (list)
+    $stmt = $conn->prepare('SELECT * FROM orders ORDER BY created_at DESC');
     $stmt->execute();
     $orders = $stmt->fetchAll();
-    
     foreach ($orders as &$o) {
         $stmt2 = $conn->prepare('SELECT * FROM order_items WHERE order_id = :oid');
         $stmt2->execute([':oid'=>$o['id']]);
         $o['items'] = $stmt2->fetchAll();
     }
-    
-    // Return paginated response with metadata
-    echo json_encode([
-        'data' => $orders,
-        'pagination' => [
-            'page' => $page,
-            'limit' => $limit,
-            'total' => $total,
-            'totalPages' => $totalPages,
-            'offset' => $offset
-        ]
-    ], JSON_UNESCAPED_UNICODE);
+    echo json_encode($orders, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
