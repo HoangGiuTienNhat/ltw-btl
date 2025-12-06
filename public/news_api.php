@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once '../config/database.php';
-require_once '../app/Controllers/AuthController.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $action = isset($_GET['action']) ? $_GET['action'] : '';
@@ -14,7 +13,7 @@ try {
             $keyword = trim($_GET['keyword'] ?? '');
 
             if ($limit === false || $limit < 1) {
-                $limit = 6;
+                $limit = 9;
             }
             if ($page === false || $page < 1) {
                 $page = 1;
@@ -34,7 +33,6 @@ try {
                 $params[] = $searchTerm;
             }
 
-            // Truy vấn 1: Đếm tổng số bài viết (để tính phân trang)
             $sqlCount = "SELECT COUNT(*) as total FROM news $sqlWhere";
             $stmtCount = $conn->prepare($sqlCount);
             foreach ($params as $key => $val) {
@@ -61,8 +59,8 @@ try {
                 'status'     => 'success', 
                 'data'       => $stmt->fetchAll(),
                 'pagination' => [
-                    'current_page' => $page,
-                    'total_pages' => $totalPages,
+                    'current_page'  => $page,
+                    'total_pages'   => $totalPages,
                     'total_records' => $totalRecords
                 ]
             ]);
@@ -118,50 +116,6 @@ try {
                 ]
             ]);
             break;
-
-        case 'post_comment':
-            if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-                echo json_encode(['status' => 'error', 'message' => 'Yêu cầu phương thức POST']);
-                exit();
-            }
-
-            $currentUser = AuthController::getCurrentUser();
-            if (!$currentUser) {
-                echo json_encode(['status' => 'error', 'message' => 'Bạn cần đăng nhập để bình luận']);
-                exit;
-            }
-
-            $news_id = filter_input(INPUT_POST, 'news_id', FILTER_VALIDATE_INT);
-            $author = '';
-            $content = trim($_POST['content'] ?? '');
-            if (isset($_SESSION['user']) && !empty($_SESSION['user']['full_name'])) {
-                $author = $_SESSION['user']['full_name'];
-            } else if (isset($currentUser['full_name']) && $currentUser['full_name'] != '') {
-                $author = $currentUser['full_name'];
-            }
-
-            // Validate
-            if ($news_id === false) {
-                echo json_encode(['status' => 'error', 'message' => 'ID không hợp lệ']);
-                exit();
-            }
-            if ($content === '') { 
-                echo json_encode(['status' => 'error', 'message' => 'Nội dung bình luận không được để trống']);
-                exit();
-            }
-            if (strlen($content) > 2000) {
-                echo json_encode(['status' => 'error', 'message' => 'Nội dung quá dài']);
-                exit();
-            }
-            $content = stripslashes($content);
-            $content = htmlspecialchars($content, ENT_QUOTES, 'UTF-8');
-            if ($news_id && $content && $author !== '') {
-                $stmt = $conn->prepare("INSERT INTO news_comments (news_id, author, content, status, created_at) VALUES (?, ?, ?, 0, NOW())");
-                $stmt->execute([$news_id, $author, $content]);
-                echo json_encode(['status' => 'success']);
-            }
-            break;
-
         default:
             echo json_encode(['status' => 'error', 'message' => 'Action invalid']);
             break;

@@ -8,29 +8,26 @@ const CONFIG = {
     detailUrl: 'news_detail.php'
 };
 
-// Danh sách các màu đẹp (Material Colors) hiển thị tốt với chữ trắng
 const AVATAR_COLORS = [
-    '#F44336', // Đỏ
-    '#E91E63', // Hồng
-    '#9C27B0', // Tím
-    '#673AB7', // Tím đậm
-    '#3F51B5', // Xanh Indigo
-    '#2196F3', // Xanh Blue
-    '#009688', // Xanh Teal
-    '#4CAF50', // Xanh lá
-    '#FF9800', // Cam
-    '#FF5722', // Cam đậm
-    '#795548', // Nâu
-    '#607D8B'  // Xám xanh
+    '#F44336', 
+    '#E91E63',
+    '#9C27B0',
+    '#673AB7', 
+    '#3F51B5',
+    '#2196F3',
+    '#009688', 
+    '#4CAF50', 
+    '#FF9800', 
+    '#FF5722', 
+    '#795548', 
+    '#607D8B'
 ];
 
-// Hàm lấy màu cố định theo tên
 function getColorByName(name) {
     let hash = 0;
     for (let i = 0; i < name.length; i++) {
         hash = name.charCodeAt(i) + ((hash << 5) - hash);
     }
-    
     const index = Math.abs(hash % AVATAR_COLORS.length);
     return AVATAR_COLORS[index];
 }
@@ -43,12 +40,10 @@ const formatDate = (dateString) => {
 async function loadNewsDetail() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
-    
     if (!id) {
         document.getElementById('news-content').innerHTML = '<div class="alert alert-warning">Không tìm thấy bài viết</div>';
         return;
     }
-
     try {
         const res = await fetch(`${CONFIG.apiUrl}?action=detail&id=${id}`);
         const result = await res.json();

@@ -246,20 +246,22 @@ include '../app/Views/layouts/header.php';
                 </div>
 
 
-                <!-- anh hieu -->
+                
+                 <!-- anh hieu -->
                 <!------- Thêm cho bài viết -------->
                 <div class="mb-5">
                     <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="fw-bold border-start border-4 border-info ps-3 m-0">CÁC BÀI VIẾT</h4>
+                        <h4 class="fw-bold mb-4 border-start border-4 border-primary ps-3">CÁC BÀI VIẾT</h4>
                         <a href="news.php" class="btn btn-outline-dark btn-sm rounded-pill">NHIỀU BÀI VIẾT HƠN <i class="bi bi-arrow-right"></i></a>
                     </div>
                     <div id="home-news-container" class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-3">
+                        <!-- Bài viết sẽ được load động bằng JS -->
                     </div>
                 </div>
                 <script src="news.js"></script>
                 <script>
                     document.addEventListener('DOMContentLoaded', () => {
-                        loadHomeNews('home-news-container', 4);
+                        loadHomeNews();
                     });
                 </script>
                 <!------- kết thúc thêm cho bài viết -------->
