@@ -91,7 +91,11 @@ class AuthController {
 
                 // Merge any guest/session cart into this user's cart so admin-visible guest carts are preserved
                 $this->mergeGuestCartIntoUser($user['id'], session_id());
-
+            if ($user['role'] === 'admin') 
+            {
+                header('Location: ../../../LTW-xampp/tabler-1.4.0-hienthuc/dashboard/home.php'); 
+                exit;
+            } else
                 header('Location: index.php');
                 exit;
             } else {
