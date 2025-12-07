@@ -1,5 +1,24 @@
 <?php
 session_start();
+
+$host = 'localhost';
+$db   = 'techstore_db';
+$user = 'root';
+$pass = '123123';          
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$conn = null;
+
+try {
+    $conn = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+} catch (\PDOException $e) {
+    // Nếu lỗi kết nối vẫn chạy tiếp với dữ liệu mặc định
+}
+
 include '../app/Views/layouts/header.php';
 ?>
 <div class="container py-4 flex-fill" style="background-color: #f5f5f5;">
